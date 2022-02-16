@@ -2,6 +2,9 @@ const express = require('express') // import express
 const app = express() // create an express app
 var bodyParser = require('body-parser')
 const {validateUser} = require("./utils/validations"); // import bodyparser
+const Joi = require("Joi")
+//joi validation
+
 
 const users = [{
     id: 1,
@@ -31,12 +34,19 @@ app.get('/api/users/:id',(req,res)=>{
 })
 
 // api to create a user
+function validation(user){
+    const JoiSchema = Joi.object({
+        name:Joi.string().required(),
+        age:Joi.number().required(),
+        gender:['Male','Female'].join(' or ')
+    })
+    return JoiSchema.validate(user)
+}
 app.post('/api/users',(req,res)=>{
 
     // Joi
-    let error = validateUser(req.body)
-    if( error != '')
-        return res.status(400).send(error)
+    let result = validation(req.body)
+    if( result.error){res.send(result.error.details[0].message)}
 
     let user = {
         id: users == [] ? 1 : users[users.length - 1].id + 1,
